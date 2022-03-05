@@ -1,49 +1,97 @@
-import React from "react";
-import { View, Text, Button, StyleSheet } from "react-native";
+import React, { useEffect, useCallback } from "react";
+import { ScrollView, View, Text, StyleSheet, Image } from "react-native";
 import { HeaderButtons, Item } from 'react-navigation-header-buttons';
+import { useSelector, useDispatch } from "react-redux";
 
-import { MEALS } from "../data/dummy-data";
 import HeaderButton from '../componets/HeaderButton';
+import DefaultText from "../componets/DafaultText";
+import { toggleFavorite } from "../store/actions/meals";
 
-const MealDetailScreen = props => {
-    const mealId = props.navigation.getParam('mealId');
-
-    const selectedMeal = MEALS.find(meal => meal.id === mealId);
-
+const ListItem = props => {
     return (
-        <View style={styles.screen}>
-            <Text>{selectedMeal.title}</Text>
-            <Button title="Go Back to Categories" onPress={() => {
-                props.navigation.popToTop();
-            }} />
+        <View style={styles.listItem}>
+            <DefaultText>{props.children}</DefaultText>
         </View>
     );
 };
 
-MealDetailScreen.navigationOptions = (navigationData) => {
-    const mealId = navigationData.navigation.getParam('mealId');
+const MealDetailScreen = props => {
+    const availableMeals = useSelector(state => state.meals.meals);
+    const mealId = props.navigation.getParam('mealId');
+    
+    const selectedMeal = availableMeals.find(meal => meal.id === mealId);
 
-    const selectedMeal = MEALS.find(meal => meal.id === mealId);
+    const dispatch = useDispatch(); 
+
+    const toggleFavoriteHandler = useCallback(() => {
+        dispatch(toggleFavorite(mealId));
+    }, [dispatch, mealId]);
+
+    useEffect(() => {
+        // props.navigation.setParams({mealTitle: selectedMeal.title});
+        props.navigation.setParams({toggleFav: toggleFavoriteHandler});
+    }, [toggleFavoriteHandler]);
+
+    return (
+        <ScrollView>
+            <Image source={{uri: selectedMeal.imageUrl}} style={styles.image} />
+            <View style={{...styles.details}}>
+                <DefaultText>{selectedMeal.duration}m</DefaultText>
+                <DefaultText>{selectedMeal.complexity.toUpperCase()}</DefaultText>
+                <DefaultText>{selectedMeal.affordability.toUpperCase()}</DefaultText>
+            </View>
+            <Text style={styles.title}>Ingredients</Text>
+            {selectedMeal.ingredients.map(ingredient => (
+                <ListItem key={ingredient}>{ingredient}</ListItem>
+            ))}
+            <Text style={styles.title}>Steps</Text>
+            {selectedMeal.steps.map(step => (
+                <ListItem key={step}>{step}</ListItem>
+            ))}
+        </ScrollView>
+    );
+};
+
+MealDetailScreen.navigationOptions = (navigationData) => {
+    // const mealId = navigationData.navigation.getParam('mealId');
+    const mealTitle = navigationData.navigation.getParam('mealTitle');
+    const toggleFavorite = navigationData.navigation.getParam('toggleFav');
+   // const selectedMeal = MEALS.find(meal => meal.id === mealId);
     return{
-        headerTitle: selectedMeal.title,
+        headerTitle: mealTitle,
         headerRight: () => 
         <HeaderButtons HeaderButtonComponent={HeaderButton}> 
             <Item 
                 title="Favorite" 
                 iconName="ios-star" 
-                onPress={() => {
-                    console.log('mark as favorite!');
-                }}    
+                onPress={toggleFavorite}    
             />
         </HeaderButtons>
     };
 };
 
 const styles = StyleSheet.create({
-    screen: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center'
+    image: {
+        width: '100%',
+        height: 200
+    },
+    details: {
+        flexDirection: 'row',
+        padding: 15,
+        justifyContent: 'space-around'
+    },
+    title: {
+        fontWeight:"bold",
+        fontSize: 22,
+        textAlign: 'center'
+
+    },
+    listItem: {
+         marginVertical: 10,
+         marginHorizontal: 20,
+         borderColor: '#ccc',
+         borderWidth: 1,
+         padding: 10
     }
 });
 

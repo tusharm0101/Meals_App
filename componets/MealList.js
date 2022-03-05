@@ -1,5 +1,6 @@
 import React from "react";
 import { View, FlatList, StyleSheet} from 'react-native';
+import mealsReducer from "../store/reducers/meals";
 
 import MealItem from "./MealItem";
 
@@ -16,9 +17,10 @@ const MealList = props => {
                     props.navigation.navigate({
                         routeName: 'MealDetail',
                         params: {
-                            mealId: itemData.item.id
+                            mealId: itemData.item.id,
+                            mealTitle: itemData.item.title
                         }
-                    })
+                    });
                 }}
             /> 
         );

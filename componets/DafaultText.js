@@ -3,13 +3,13 @@ import { Text, StyleSheet} from 'react-native';
 
 const DefaultText = props => {
     return (
-        <Text style={StyleSheet.Text}>{props.children}</Text>
+        <Text style={styles.text}>{props.children}</Text>
     );
 }
 
 const styles = StyleSheet.create({
     text: {
-        fontWeight: 'bold'
+        fontWeight: 'normal'
     }
 });
 
